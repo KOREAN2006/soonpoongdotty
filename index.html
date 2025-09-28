@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body{
+        margin: 0px;
+        background-color: #210;
+        font-family: "Aggravo";
+        -webkit-user-select: none !important; /* Chrome/Safari */
+        -moz-user-select: -moz-none !important;  /* Firefox */
+        user-select: none !important;  /* IE */
+      }
+      @font-face {
+        font-family: 'Aggravo';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroM.woff') format('woff');
+        font-weight: 400;
+        font-display: swap;
+      }
+      #mcs{
+        position: absolute;
+        top: 140px;
+        left: 110px;
+        font-size: 32px;
+        color: #FFF;
+      }
+      #sky{
+        position: absolute;
+        top: 40px;
+        left: 110px;
+        width: 450px;
+        height: 10px;
+        background: #FFF;
+        border-radius: 2763px;
+      }
+      #mover{
+        position: absolute;
+        top: 410px;
+        left: 200px;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+      }
+      #ground{
+        position: absolute;
+        top: 500px;
+        left: 110px;
+        width: 450px;
+        height: 10px;
+        background: #FFF;
+        border-radius: 2763px;
+      }
+      .cometsCSS{
+        font-family: "Aggravo";
+        display: block;
+        text-align: center;
+        font-size: 32px;
+        color: #FFF;
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        padding: 0px;
+        margin: 0px;
+        border-width: 0px;
+        border-radius: 50%;
+        left: 1200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="mcs">대사가 나왔다가다시들어갈 수 있게 잘 비켜야 한다!
+      <br>못 비킨 자(도티)는 비명을 지르며 사라질 것!
+      <br>- space를 눌러서 start
+      <br>- font는 어그로체
+    </div>
+    <div id="sky"></div>
+    <img id="mover" src="./Dotty.png"></img>
+    <div id="ground"></div>
+    <script>
+      const BGM = new Audio("./BGM.mp3");
+      const gdW = new Audio("./gdW.mp3");
+      const Wdg = new Audio("./Wdg.mp3");
+      const AAAA = new Audio("./AAAA.mp3");
+      BGM.volume = 0.1;
+      BGM.loop = true;
+      let start = false;
+      let spaceKey = false;
+      let resultPoint = false;
+      let resultEffect = false;
+      let cometNumber = 0;
+      let cometSpeed = 5;
+      let cometOut = 20;
+      let movingComets = [];
+      let gameScore = 0;
+      const comets = [
+        { t: "아", c1: "#AA0", c2: "#A00" }, { t: "니", c1: "#AA0", c2: "#A00" }, /* 아니 1-1 */
+        { t: "도", c1: "#AA0", c2: "#A00" }, { t: "대", c1: "#AA0", c2: "#A00" }, { t: "체", c1: "#AA0", c2: "#A00" }, /* 도대체 1-1 */
+        { t: "개", c1: "#A50", c2: "#F00" }, { t: "웃", c1: "#A50", c2: "#F00" }, { t: "겨", c1: "#A50", c2: "#F00" }, { t: "서", c1: "#A50", c2: "#F00" }, /* 개웃겨서 2-1 */
+        { t: "도", c1: "#A50", c2: "#F00" }, { t: "티", c1: "#A50", c2: "#F00" }, { t: "낳", c1: "#A50", c2: "#F00" }, { t: "음", c1: "#A50", c2: "#F00" }, /* 도티낳음 2-1 */
+        { t: "이", c1: "#A50", c2: "#F00" }, { t: "게", c1: "#A50", c2: "#F00" }, { t: "뭐", c1: "#A50", c2: "#F00" }, { t: "야", c1: "#A50", c2: "#F00" }, /* 이게뭐야 2-1 */
+        { t: "아", c1: "#00A", c2: "#A0A" }, { t: "니", c1: "#00A", c2: "#A0A" }, { t: "왜", c1: "#00A", c2: "#A0A" }, /* 아니왜 3-1 */
+        { t: "나", c1: "#00A", c2: "#A0A" }, { t: "를", c1: "#00A", c2: "#A0A" }, { t: "낳", c1: "#00A", c2: "#A0A" }, { t: "아", c1: "#00A", c2: "#A0A" }, /* 나를낳아 3-1 */
+        { t: "아", c1: "#5AA", c2: "#05A" }, { t: "니", c1: "#5AA", c2: "#05A" }, { t: "막", c1: "#5AA", c2: "#05A" }, /* 아니막 4-1 */
+        { t: "요", c1: "#5AA", c2: "#05A" }, { t: "즘", c1: "#5AA", c2: "#05A" }, /* 요즘 4-1 */
+        { t: "댓", c1: "#5AA", c2: "#05A" }, { t: "글", c1: "#5AA", c2: "#05A" }, { t: "에", c1: "#5AA", c2: "#05A" }, { t: "도", c1: "#5AA", c2: "#05A" }, /* 댓글에도 4-1 */
+        { t: "겁", c1: "#5AA", c2: "#05A" }, { t: "나", c1: "#5AA", c2: "#05A" }, /* 겁나 4-1 */
+        { t: "달", c1: "#5AA", c2: "#05A" }, { t: "렸", c1: "#5AA", c2: "#05A" }, { t: "어", c1: "#5AA", c2: "#05A" }, /* 달렸어 4-1 */
+        { t: "이", c1: "#A50", c2: "#F00" }, { t: "게", c1: "#A50", c2: "#F00" }, { t: "무", c1: "#A50", c2: "#F00" }, { t: "슨", c1: "#A50", c2: "#F00" }, /* 이게무슨 2-2 */
+        { t: "말", c1: "#A50", c2: "#F00" }, { t: "이", c1: "#A50", c2: "#F00" }, { t: "에", c1: "#A50", c2: "#F00" }, { t: "요", c1: "#A50", c2: "#F00" }, /* 말이에요 2-2 */
+        { t: "왜", c1: "#00A", c2: "#A0A" }, { t: "나", c1: "#00A", c2: "#A0A" }, { t: "를", c1: "#00A", c2: "#A0A" }, /* 왜나를 3-2 */
+        { t: "낳", c1: "#00A", c2: "#A0A" }, { t: "아", c1: "#00A", c2: "#A0A" }, /* 낳아 3-2 */
+        { t: "우", c1: "#0A5", c2: "#050" }, { t: "리", c1: "#0A5", c2: "#050" }, /* 우리 5-1 */
+        { t: "엄", c1: "#0A5", c2: "#050" }, { t: "마", c1: "#0A5", c2: "#050" }, { t: "가", c1: "#0A5", c2: "#050" }, /* 엄마가 5-1 */
+        { t: "왜", c1: "#0A5", c2: "#050" }, { t: "이", c1: "#0A5", c2: "#050" }, { t: "렇", c1: "#0A5", c2: "#050" }, { t: "게", c1: "#0A5", c2: "#050" }, /* 왜이렇게 5-1 */
+        { t: "많", c1: "#0A5", c2: "#050" }, { t: "아", c1: "#0A5", c2: "#050" } /* 많아 5-1 */
+      ];
+      const body = document.querySelector("body");
+      const mcs = document.querySelector("#mcs");
+      const mover = {
+        dom: document.querySelector("#mover"),
+        ySpeed: 0,
+        yPosition: 410
+      };
+
+      addEventListener( "keyup", k => {
+        if( k.key === " " && spaceKey ){
+          spaceKey = false;
+        };
+      });
+      addEventListener( "keydown", k => {
+        if(k.key === " "){
+          if(!start){
+            start = true;
+            BGM.play();
+            mcs.innerHTML = `${gameScore}명나왔다가다시들어가는소리~`;
+            setInterval( main, 20 );
+          };
+          if(!spaceKey){
+            spaceKey = true;
+            mover.ySpeed = -15;
+          };
+        };
+      });
+
+      function main(){
+        moveDooty();
+        cometControl();
+        collisionCheck();
+      };
+      function moveDooty(){
+        if( mover.ySpeed < 15 ){
+          mover.ySpeed += 1;
+        };
+        mover.yPosition += mover.ySpeed;
+        if( mover.yPosition > 410 ){
+          mover.yPosition = 410;
+        }else if( mover.yPosition < 50 ){
+          mover.yPosition = 50;
+          mover.ySpeed *= -1;
+        };
+        mover.dom.style.top = `${mover.yPosition}px`;
+      };
+      function cometControl(){
+        cometOut -= 1;
+        if( cometOut === 0 && !resultPoint ){
+          cometMake();
+          cometOut = Math.floor( Math.random() * 31 + 40 );
+        };
+        if(movingComets[0]){
+          for( const cometInArray of movingComets ){
+            cometInArray.xPosition -= cometSpeed;
+            cometInArray.dom.style.left = `${cometInArray.xPosition}px`;
+          };
+          if( movingComets[0].xPosition <= 0 && movingComets[0].Wkdltgh ){
+            Wdg.play();
+            movingComets[0].Wkdltgh = false;
+          }else if( movingComets[0].xPosition <= -60 ){
+            movingComets[0].dom.remove();
+            movingComets.shift();
+            gameScore += 1;
+            mcs.innerHTML = `${gameScore}명나왔다가다시들어가는소리~`;
+            if( gameScore % 31 === 0 && gameScore > 30 && cometSpeed < 15 ){
+              cometSpeed += 1;
+            };
+          };
+        }else if(resultPoint){
+          mcs.innerHTML = `${gameScore}명나왔다가다시들어가는소리~<br>총 ${gameScore}명 성공!`;
+        };
+      };
+      function cometMake(){
+        const comet = document.createElement("button");
+        const nowCometNumber = cometNumber%comets.length;
+        comet.innerHTML = comets[nowCometNumber].t;
+        comet.classList.add("cometsCSS");
+        comet.id = `comet${cometNumber}`;
+        body.appendChild(comet);
+        gdW.play();
+        const inArray = {
+          dom: document.querySelector(`#comet${cometNumber}`),
+          xPosition: 1200,
+          Wkdltgh: true
+        };
+        inArray.yPosition = Math.floor( ( 1 - Math.random() ** 1.5 ) * 391 + 50 );
+        inArray.dom.style.top = `${inArray.yPosition}px`;
+        inArray.dom.style.background = `linear-gradient( ${comets[nowCometNumber].c1}, ${comets[nowCometNumber].c2} )`;
+        movingComets.push(inArray);
+        cometNumber += 1;
+      };
+      function collisionCheck(){
+        for( const cometInArray of movingComets ){
+          if( ( cometInArray.yPosition - mover.yPosition - 15 ) ** 2 + ( cometInArray.xPosition - 215 ) ** 2 < 75 ** 2 ){
+            resultPoint = true;
+          };
+        };
+        if( resultPoint && !resultEffect ){
+          resultEffect = true;
+          mover.dom.style.height = "0px";
+          BGM.pause();
+          AAAA.play();
+          body.style.backgroundColor = "#012";
+        };
+      };
+    </script>
+  </body>
+</html>
